@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
+from payments.services.emails import send_order_paid_email
 from orders.models import Order
 from payments.models import Payment
 from payments.services.zarinpal import ZarinpalClient
@@ -59,6 +59,7 @@ class ZarinpalCallbackView(APIView):
             if order.status != Order.Status.PAID:
                 order.status = Order.Status.PAID
                 order.save(update_fields=["status", "updated_at"])
+                send_order_paid_email(order=order, payment=payment)
 
             return redirect(f"{settings.FRONTEND_BASE_URL}/payment/result?payment_id={payment.id}")
 

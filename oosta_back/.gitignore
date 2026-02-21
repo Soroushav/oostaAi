@@ -16,3 +16,11 @@ staticfiles/
 # IDE
 .idea/
 .vscode/
+*.zip
+
+# Python env
+venv/
+.env
+
+# IDE
+.idea/

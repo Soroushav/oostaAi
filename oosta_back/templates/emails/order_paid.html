@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تأیید پرداخت سفارش</title>
+</head>
+<body style="margin:0;padding:0;background:#f6f7f9;font-family:Tahoma,Arial,sans-serif;direction:rtl;">
+  <div style="max-width:640px;margin:0 auto;padding:24px;">
+    <div style="background:#ffffff;border-radius:12px;padding:24px;line-height:1.9;color:#111;">
+      <h2 style="margin:0 0 12px 0;font-size:18px;">تأیید پرداخت ✅</h2>
+
+      <p style="margin:0 0 16px 0;">سلام،</p>
+      <p style="margin:0 0 16px 0;">پرداخت سفارش شما با موفقیت انجام شد.</p>
+
+      <div style="background:#f3f4f6;border-radius:10px;padding:14px;margin:16px 0;">
+        <div style="margin:0 0 6px 0;"><strong>شماره سفارش:</strong> {{ order_number }}</div>
+        <div style="margin:0 0 6px 0;"><strong>تاریخ پرداخت:</strong> {{ paid_at }}</div>
+        <div style="margin:0;"><strong>مبلغ پرداختی:</strong> {{ paid_amount }} {{ currency }}</div>
+      </div>
+
+      <h3 style="margin:18px 0 10px 0;font-size:16px;">اقلام سفارش</h3>
+
+      <ul style="margin:0;padding:0 18px 0;">
+        {% for item in items %}
+          <li style="margin:0 0 14px 0;">
+            <strong>
+              {{ item.title }}{% if item.option_title %} ({{ item.option_title }}){% endif %}
+            </strong><br/>
+            تعداد: {{ item.quantity }}<br/>
+            مبلغ واحد: {{ item.unit_price }} {{ currency }}<br/>
+            مبلغ کل: {{ item.total_price }} {{ currency }}<br/>
+            {% if item.target_email %}
+              ایمیل فعال‌سازی: {{ item.target_email }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+
+      <div style="margin:16px 0 0 0;">
+        <strong>وضعیت سفارش:</strong> پرداخت‌شده
+      </div>
+
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:18px 0;" />
+
+      <p style="margin:0 0 10px 0;color:#444;">
+        اگر این پرداخت توسط شما انجام نشده است، لطفاً در اولین فرصت با پشتیبانی تماس بگیرید.
+      </p>
+
+      {% if support_text %}
+        <p style="margin:0 0 18px 0;color:#444;">{{ support_text }}</p>
+      {% endif %}
+
+      <p style="margin:0;color:#111;">
+        با احترام<br/>
+        {{ brand_name }}
+      </p>
+    </div>
+
+    <div style="text-align:center;color:#6b7280;font-size:12px;margin-top:14px;">
+      این پیام به‌صورت خودکار ارسال شده است.
+    </div>
+  </div>
+</body>
+</html>

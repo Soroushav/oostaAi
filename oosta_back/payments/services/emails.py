@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
 
@@ -123,9 +123,9 @@ def send_order_paid_email(*, order, payment) -> int:
     paid_at = getattr(payment, "paid_at", None) or timezone.now()
 
     paid_amount = (
-        getattr(payment, "amount_rial", None)
-        or getattr(payment, "amount", None)
-        or ""
+            getattr(payment, "amount_rial", None)
+            or getattr(payment, "amount", None)
+            or ""
     )
 
     context = {
@@ -151,3 +151,74 @@ def send_order_paid_email(*, order, payment) -> int:
     )
     msg.attach_alternative(html_body, "text/html")
     return msg.send(fail_silently=False)
+
+
+def send_admin_paid_order_email(*, order, payment) -> int:
+    admin_email = getattr(settings, "ADMIN_ORDER_EMAIL", None)
+    if not admin_email:
+        return 0
+
+    order_number = getattr(order, "number", None) or getattr(order, "id", None)
+
+    # گرفتن ایمیل مشتری
+    customer_email = None
+    user = getattr(order, "user", None)
+    if user and getattr(user, "email", None):
+        customer_email = user.email
+
+    if not customer_email:
+        for attr in ("email", "customer_email"):
+            val = getattr(order, attr, None)
+            if val:
+                customer_email = val
+                break
+
+    paid_at = getattr(payment, "paid_at", None) or timezone.now()
+    paid_amount = getattr(payment, "amount_rial", None) or getattr(payment, "amount", None) or ""
+    items_count = order.items.count()
+
+    # ساخت لیست آیتم‌ها
+    items = []
+    for oi in order.items.all():
+        product_title = (
+            getattr(getattr(oi.option, "product", None), "title", "")
+            if oi.option
+            else ""
+        )
+        option_title = getattr(oi.option, "title", "") if oi.option else ""
+        quantity = oi.quantity
+        target_email = getattr(oi, "target_email_snapshot", None)
+
+        items.append(
+            {
+                "title": product_title,
+                "option_title": option_title,
+                "quantity": quantity,
+                "target_email": target_email,
+            }
+        )
+
+    site_url = getattr(settings, "SITE_URL", "http://127.0.0.1:8000").rstrip("/")
+    admin_order_url = f"{site_url}/admin/orders/order/{order.id}/change/"
+
+    context = {
+        "order_number": order_number,
+        "customer_email": customer_email or "-",
+        "paid_at": paid_at,
+        "paid_amount": paid_amount,
+        "currency": "ریال",
+        "items_count": items_count,
+        "items": items,
+        "admin_order_url": admin_order_url,
+    }
+
+    subject = f"سفارش پرداخت‌شده جدید: #{order_number}"
+    body = render_to_string("emails/admin_new_paid_order.txt", context)
+
+    return send_mail(
+        subject=subject,
+        message=body,
+        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+        recipient_list=[admin_email],
+        fail_silently=False,
+    )

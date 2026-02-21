@@ -135,6 +135,9 @@ EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "True") == "True"
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "False") == "True"
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 
+ADMIN_ORDER_EMAIL = os.getenv("ADMIN_ORDER_EMAIL")
+SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000")
+
 USE_I18N = True
 
 USE_TZ = True

@@ -12,11 +12,13 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-query": "^5.90.16",
+    "axios": "^1.13.5",
     "jquery": "^3.7.1",
     "lucide-react": "^0.562.0",
     "owl.carousel": "^2.3.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hook-form": "^7.71.1",
     "react-owl-carousel": "^2.3.3",
     "react-router-dom": "^7.11.0",
     "swiper": "^12.0.3",

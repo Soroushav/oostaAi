@@ -1,8 +1,25 @@
 import React from "react";
-import { User, Maximize, Bot } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { User, LogOutIcon, Bot, LogIn } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { logout as logoutApi } from "../services/apiAuth";
 
-const Header = () => {
+const Header: React.FC = () => {
+  const {isAuthenticated} = useAuth();
+  const { logout : logoutContext} = useAuth();
+
+  const handleLogout = async () => {
+    try{
+      await logoutApi();
+      navigate("/main", { replace: true })
+      setTimeout(() => {
+        logoutContext();
+      }, 1)
+    } catch(error){
+      console.log("Logout API failed", error)
+    }
+  }
+  const navigate = useNavigate()
   const navLinks = [
     { id: "main", label: "صفحه اصلی", href: "/main" },
     { id: "products", label: "محصولات", href: "/products" },
@@ -51,17 +68,35 @@ const Header = () => {
 
           {/* Left Section: Actions */}
           <div className="flex-1 flex justify-end items-center gap-3">
-            <button
-              className="hidden sm:flex p-2.5 text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              title="Make the app fullscreen"
+            {isAuthenticated && <button
+              className="hidden sm:flex p-2.5 text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+              title="Logout"
+              onClick={handleLogout}
             >
-              <Maximize size={20} />
+              <LogOutIcon size={20} />
             </button>
+            }
 
-            <button className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-slate-200">
-              <User size={18} />
-              <span className="text-sm font-medium">حساب کاربری</span>
-            </button>
+            
+            {
+              isAuthenticated ? (
+                <button
+                  onClick={() => navigate("/panel")}
+                  className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-slate-200 cursor-pointer"
+                >
+                  <User size={18} />
+                  <span className="text-sm font-medium">حساب کاربری</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate("/login")}
+                  className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-emerald-200 cursor-pointer"
+                >
+                  <LogIn size={18} />
+                  <span className="text-sm font-medium">ورود به حساب</span>
+                </button>
+              )
+            }
           </div>
         </div>
       </div>

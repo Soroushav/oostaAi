@@ -66,7 +66,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
-
+ADMIN_BASE_URL = os.environ.get("ADMIN_BASE_URL", "http://127.0.0.1:8000")
 ROOT_URLCONF = 'store_backend.urls'
 
 TEMPLATES = [
@@ -137,6 +137,7 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 
 ADMIN_ORDER_EMAIL = os.getenv("ADMIN_ORDER_EMAIL")
 SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000")
+EMAIL_TIMEOUT = 20
 
 USE_I18N = True
 

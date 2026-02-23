@@ -2,6 +2,8 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.urls import reverse
+
 
 
 def _get_order_recipient_email(order):
@@ -198,8 +200,17 @@ def send_admin_paid_order_email(*, order, payment) -> int:
             }
         )
 
-    site_url = getattr(settings, "SITE_URL", "http://127.0.0.1:8000").rstrip("/")
-    admin_order_url = f"{site_url}/admin/orders/order/{order.id}/change/"
+    def _admin_change_url(obj):
+        return reverse(
+            f"admin:{obj._meta.app_label}_{obj._meta.model_name}_change",
+            args=[obj.pk],
+        )
+
+    fulfillment = getattr(order, "fulfillment", None)
+    target_obj = fulfillment if fulfillment else order
+
+    admin_path = _admin_change_url(target_obj)
+    admin_order_url = f"{settings.ADMIN_BASE_URL.rstrip('/')}{admin_path}"
 
     context = {
         "order_number": order_number,

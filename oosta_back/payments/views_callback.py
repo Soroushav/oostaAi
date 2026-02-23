@@ -8,7 +8,7 @@ from payments.services.emails import send_order_paid_email, send_admin_paid_orde
 from orders.models import Order
 from payments.models import Payment
 from payments.services.zarinpal import ZarinpalClient
-
+from fulfillment.models import Fulfillment, FulfillmentItem
 
 class ZarinpalCallbackView(APIView):
     authentication_classes = []
@@ -49,20 +49,30 @@ class ZarinpalCallbackView(APIView):
         code = data.get("code")
         ref_id = data.get("ref_id") or ""
 
-        # success codes commonly: 100 (success) and 101 (already verified) :contentReference[oaicite:3]{index=3}
         if code in (100, 101) and ref_id:
             payment.mark_paid(ref_id=str(ref_id))
             payment.save(update_fields=["verify_payload", "verify_response", "status", "ref_id", "paid_at", "updated_at"])
 
-            # update order to PAID (only here)
             order = payment.order
             if order.status != Order.Status.PAID:
                 order.status = Order.Status.PAID
                 order.save(update_fields=["status", "updated_at"])
+
+                fulfillment, _ = Fulfillment.objects.get_or_create(
+                    order=order,
+                    defaults={"status": Fulfillment.Status.PENDING},
+                )
+
+                for oi in order.items.all():
+                    FulfillmentItem.objects.get_or_create(
+                        fulfillment=fulfillment,
+                        order_item=oi,
+                        defaults={"status": FulfillmentItem.Status.PENDING},
+                    )
+
                 try:
                     send_order_paid_email(order=order, payment=payment)
                 except Exception as e:
-                    # فقط لاگ کن، ولی callback رو fail نکن
                     print("send_order_paid_email failed:", e)
 
                 try:

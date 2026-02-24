@@ -22,7 +22,15 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to="products/images/", null=True, blank=True)
 
+    @property
+    def starting_price(self):
+        min_option = self.options.filter(is_active=True).order_by('price').first()
+
+        if min_option:
+            return min_option.price
+        return None
     class Meta:
         ordering = ["-created_at"]
 

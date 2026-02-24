@@ -5,7 +5,6 @@ from django.utils import timezone
 from django.urls import reverse
 
 
-
 def _get_order_recipient_email(order):
     """
     Recipient email priority:

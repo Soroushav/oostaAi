@@ -68,7 +68,8 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True
 ADMIN_BASE_URL = os.environ.get("ADMIN_BASE_URL", "http://127.0.0.1:8000")
 ROOT_URLCONF = 'store_backend.urls'
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

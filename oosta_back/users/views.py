@@ -9,12 +9,14 @@ from .serializers import SignupSerializer, ProfileSerializer, PasswordResetConfi
 from django.core.mail import send_mail
 from django.utils import timezone
 from .models import OneTimeCode
+from .throttling import AuthOtpRateThrottle, UserActionRateThrottle, LoginRateThrottle
 
 User = get_user_model()
 
 
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [UserActionRateThrottle]
 
     def get(self, request):
         return Response(ProfileSerializer(request.user).data)
@@ -32,6 +34,7 @@ class MeView(APIView):
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [AuthOtpRateThrottle]
 
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
@@ -79,6 +82,7 @@ class LogoutView(APIView):
 
 class GuestAuthView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [AuthOtpRateThrottle]
 
     def post(self, request):
         email = request.data.get("email")
@@ -115,6 +119,7 @@ class GuestAuthView(APIView):
 
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [AuthOtpRateThrottle]
 
     def post(self, request):
         ser = PasswordResetRequestSerializer(data=request.data)
@@ -186,6 +191,7 @@ class PasswordResetConfirmView(APIView):
 
 class EmailVerifyRequestView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [UserActionRateThrottle]
 
     def post(self, request):
         EmailVerifyRequestSerializer(data=request.data).is_valid(raise_exception=True)
@@ -256,3 +262,10 @@ class EmailVerifyConfirmView(APIView):
                 user.save(update_fields=["email_verified"])
 
         return Response({"detail": "Email verified successfully."}, status=status.HTTP_200_OK)
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """
+    ویوی سفارشی لاگین برای اعمال محدودیت (جلوگیری از Brute-force)
+    """
+    throttle_classes = [LoginRateThrottle]
